@@ -6,6 +6,9 @@
     "build": "node scripts/build-site.mjs",
     "new": "node scripts/new-post.mjs",
     "new:post": "powershell -ExecutionPolicy Bypass -File scripts/new-post.ps1",
-    "publish": "powershell -ExecutionPolicy Bypass -File scripts/publish.ps1"
+    "publish": "powershell -ExecutionPolicy Bypass -File scripts/publish.ps1",
+    "obsidian:init": "powershell -ExecutionPolicy Bypass -File scripts/sync-obsidian-posts.ps1 -Direction site-to-obsidian",
+    "obsidian:sync": "powershell -ExecutionPolicy Bypass -File scripts/sync-obsidian-posts.ps1 -Direction obsidian-to-site",
+    "obsidian:publish": "powershell -ExecutionPolicy Bypass -File scripts/sync-obsidian-posts.ps1 -Direction obsidian-to-site -Publish"
   }
 }

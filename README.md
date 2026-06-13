@@ -63,13 +63,45 @@ npm run build
 
 ## Obsidian 工作流
 
-把 Obsidian 的库目录指向这个网站仓库，或在 Obsidian 里打开 `content/posts/` 这个目录。写完 Markdown 后：
+推荐把 Obsidian 文章目录作为写作入口：
 
-```powershell
-npm run publish
+```text
+D:\Nutstore\Obsidian Vault\posts
 ```
 
-如果你使用 Obsidian Git 插件，可以让它自动 commit/push。仓库里的 GitHub Actions 会在 `main` 分支更新后自动运行 `npm run build` 并发布 `_site/`。
+网站实际读取的是这个目录：
+
+```text
+D:\Nutstore\0.2026年-代办工作\work-life-reflections-promo\website\content\posts
+```
+
+注意：不要同步 `website\posts`。这个目录是自动生成的 HTML 页面，不是文章源文件。
+
+第一次使用时，把网站现有文章复制到 Obsidian：
+
+```powershell
+npm run obsidian:init
+```
+
+之后在 Obsidian 写完文章后，回到网站目录运行：
+
+```powershell
+npm run obsidian:publish
+```
+
+这个命令会自动完成：
+
+1. 从 Obsidian 复制新增或修改过的 `.md` 文章
+2. 重新生成网站 HTML
+3. 提交并推送到 GitHub
+
+如果只想同步和本地生成，不发布：
+
+```powershell
+npm run obsidian:sync
+```
+
+同步脚本不会自动删除任何一边的文件，避免误删文章。需要删除文章时，请同时删除 Obsidian `posts` 和网站目录 `content/posts/` 里的同名 Markdown，再运行 `npm run publish`。
 
 ## Codex 工作流
 
