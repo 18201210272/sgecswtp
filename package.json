@@ -1,0 +1,9 @@
+{
+  "name": "sgecswtp-site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-site.mjs",
+    "new": "node scripts/new-post.mjs"
+  }
+}
