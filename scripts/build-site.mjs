@@ -7,11 +7,6 @@ const postsDir = path.join(root, "posts");
 const siteDir = path.join(root, "_site");
 const sitePostsDir = path.join(siteDir, "posts");
 
-fs.rmSync(postsDir, { recursive: true, force: true });
-fs.mkdirSync(postsDir, { recursive: true });
-fs.rmSync(siteDir, { recursive: true, force: true });
-fs.mkdirSync(sitePostsDir, { recursive: true });
-
 const month = new Intl.DateTimeFormat("en", { month: "short", timeZone: "UTC" });
 
 function escapeHtml(value) {
@@ -30,10 +25,60 @@ function slugify(value) {
     .replace(/^-+|-+$/g, "");
 }
 
+function toIsoDate(date) {
+  const year = date.getFullYear();
+  const monthValue = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${monthValue}-${day}`;
+}
+
+function inferDateFromFile(filePath) {
+  const baseName = path.basename(filePath, ".md");
+  const match = baseName.match(/(\d{4})(?:-|年)(\d{1,2})(?:-|月)(\d{1,2})/);
+  if (match) {
+    return `${match[1]}-${match[2].padStart(2, "0")}-${match[3].padStart(2, "0")}`;
+  }
+
+  return toIsoDate(fs.statSync(filePath).mtime);
+}
+
+function cleanTitle(value) {
+  return String(value)
+    .trim()
+    .replace(/^#+\s*/, "")
+    .replace(/^title:\s*/i, "")
+    .replace(/^["']|["']$/g, "")
+    .trim();
+}
+
+function summarizeMarkdown(markdown) {
+  const line = markdown
+    .split(/\r?\n/)
+    .map((item) => item.trim())
+    .find((item) => item && !item.startsWith("#") && !item.startsWith("- ") && !item.startsWith("* "));
+
+  if (!line) return "";
+  return line.replace(/\*\*|`|>/g, "").slice(0, 80);
+}
+
 function parseFrontMatter(source, filePath) {
   const match = source.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
   if (!match) {
-    throw new Error(`${filePath} is missing YAML-style front matter.`);
+    const lines = source.split(/\r?\n/);
+    const firstContentIndex = lines.findIndex((line) => line.trim());
+    const fallbackTitle =
+      firstContentIndex === -1 ? path.basename(filePath, ".md") : cleanTitle(lines[firstContentIndex]);
+    const body = firstContentIndex === -1 ? "" : lines.slice(firstContentIndex + 1).join("\n").trim();
+
+    return {
+      data: {
+        title: fallbackTitle || path.basename(filePath, ".md"),
+        date: inferDateFromFile(filePath),
+        category: "工作",
+        summary: summarizeMarkdown(body),
+      },
+      body,
+    };
   }
 
   const data = {};
@@ -189,27 +234,32 @@ function readPosts() {
       const filePath = path.join(contentDir, name);
       const source = fs.readFileSync(filePath, "utf8");
       const { data, body } = parseFrontMatter(source, filePath);
-      const date = data.date;
+      const date = data.date || data.created || inferDateFromFile(filePath);
       if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
         throw new Error(`${name} needs date: YYYY-MM-DD`);
       }
-      if (!data.title) throw new Error(`${name} needs title`);
-      if (!data.category) throw new Error(`${name} needs category`);
 
-      const slug = data.slug || slugify(path.basename(name, ".md"));
+      const title = data.title || cleanTitle(path.basename(name, ".md"));
+      const category = data.category || "工作";
+      const baseName = path.basename(name, ".md");
+      const slugSource = data.slug || (/^(未命名|untitled)/i.test(baseName) ? title : baseName);
+      const slug = slugify(slugSource);
+      if (!title) throw new Error(`${name} needs title`);
+      if (!slug) throw new Error(`${name} needs slug`);
+
       const dateObj = new Date(`${date}T00:00:00Z`);
       const year = dateObj.getUTCFullYear();
       const displayDate = `${month.format(dateObj)} ${String(dateObj.getUTCDate()).padStart(2, "0")}`;
-      const keywords = [year, displayDate, data.title, data.category, data.summary, data.keywords]
+      const keywords = [year, displayDate, title, category, data.summary, data.keywords]
         .filter(Boolean)
         .join(" ");
 
       return {
-        title: data.title,
+        title,
         date,
         year,
         displayDate,
-        category: data.category,
+        category,
         summary: data.summary || "",
         keywords,
         slug,
@@ -500,6 +550,11 @@ const posts = readPosts();
 if (!posts.length) {
   throw new Error("No markdown posts found in content/posts.");
 }
+
+fs.rmSync(postsDir, { recursive: true, force: true });
+fs.mkdirSync(postsDir, { recursive: true });
+fs.rmSync(siteDir, { recursive: true, force: true });
+fs.mkdirSync(sitePostsDir, { recursive: true });
 
 function copyDir(from, to) {
   if (!fs.existsSync(from)) return;

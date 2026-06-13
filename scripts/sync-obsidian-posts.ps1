@@ -3,6 +3,7 @@ param(
   [string]$Direction = "obsidian-to-site",
   [string]$ObsidianPosts = "D:\Nutstore\Obsidian Vault\posts",
   [switch]$Publish,
+  [switch]$Prune,
   [switch]$DryRun,
   [string]$Message = "Sync Obsidian posts"
 )
@@ -60,12 +61,22 @@ function Test-SameFile {
 Write-Output "Sync direction: $Direction"
 Write-Output "Source: $source"
 Write-Output "Destination: $destination"
-Write-Output "Mode: copy changed *.md files only; never delete files."
+Write-Output "Mode: copy changed *.md files; skip untitled drafts."
+if ($Prune -and $Direction -eq "obsidian-to-site") {
+  Write-Output "Prune: enabled for destination-only *.md files."
+}
 
 $files = Get-ChildItem -LiteralPath $source -Filter "*.md" -File | Sort-Object Name
+$sourceNames = @{}
 $copied = 0
 
 foreach ($file in $files) {
+  if ($file.Name -like "未命名*.md" -or $file.Name -like "Untitled*.md") {
+    Write-Output "Skipped draft: $($file.Name)"
+    continue
+  }
+
+  $sourceNames[$file.Name] = $true
   $target = Join-Path $destination $file.Name
 
   if (Test-SameFile -Left $file.FullName -Right $target) {
@@ -88,6 +99,26 @@ if ($files.Count -eq 0) {
 }
 
 Write-Output "Changed files copied: $copied"
+
+if ($Prune -and $Direction -eq "obsidian-to-site") {
+  $removed = 0
+  $destinationFiles = Get-ChildItem -LiteralPath $destination -Filter "*.md" -File | Sort-Object Name
+  foreach ($file in $destinationFiles) {
+    if ($sourceNames.ContainsKey($file.Name)) {
+      continue
+    }
+
+    if ($DryRun) {
+      Write-Output "Would remove destination-only file: $($file.Name)"
+    } else {
+      Remove-Item -LiteralPath $file.FullName -Force
+      Write-Output "Removed destination-only file: $($file.Name)"
+    }
+
+    $removed += 1
+  }
+  Write-Output "Destination-only files removed: $removed"
+}
 
 if ($DryRun) {
   Write-Output "Dry run complete. Build and publish skipped."

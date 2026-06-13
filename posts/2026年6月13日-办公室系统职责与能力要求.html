@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>办公室系统职责与能力要求 - Work Life Notes</title>
+    <meta name="description" content="从政治属性、系统管理、三个价值三个维度，梳理新时代办公室系统的职责定位与能力要求" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Bungee+Shade&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --paper: #fbfaf7;
+        --ink: #000000;
+        --soft-ink: #666666;
+        --line: #d8d1c5;
+        --hover: #f0ece4;
+        --max: 860px;
+      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: "Bree Serif", KaiTi, STKaiti, SimSun, serif;
+      }
+      a { color: inherit; text-decoration: none; }
+      .page { width: min(var(--max), calc(100% - 40px)); margin: 0 auto; padding: 42px 0 80px; }
+      .site-header {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: start;
+        gap: 28px;
+        border-bottom: 2px solid var(--ink);
+        padding-bottom: 18px;
+      }
+      .brand {
+        display: inline-block;
+        font-family: "Bungee Shade", "Bree Serif", serif;
+        font-size: clamp(36px, 7vw, 76px);
+        line-height: 0.9;
+        letter-spacing: 0;
+      }
+      .motto { margin: 8px 0 0; color: var(--soft-ink); font-size: 18px; line-height: 1.7; }
+      .mark { width: 76px; height: 76px; margin-top: 6px; }
+      .identity-card { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 6px; }
+      .identity-card .mark { margin-top: 0; }
+      .wtp-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 162px;
+        height: 34px;
+        border: 2px solid var(--ink);
+        border-radius: 4px;
+        background: #ffffff;
+        padding: 0 12px;
+        font-size: 15px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .wtp-code { font-family: "Bree Serif", serif; }
+      .wtp-dash { margin: 0 4px; }
+      .wtp-name { font-family: KaiTi, STKaiti, SimSun, serif; }
+      .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 28px 0 38px; }
+      .search {
+        flex: 1 1 260px;
+        min-width: 0;
+        height: 38px;
+        border: 2px solid var(--ink);
+        border-radius: 4px;
+        background: #ffffff;
+        color: var(--ink);
+        padding: 0 12px;
+        font: 17px "Bree Serif", KaiTi, STKaiti, serif;
+      }
+      .filter {
+        height: 38px;
+        border: 2px solid var(--ink);
+        border-radius: 4px;
+        background: #ffffff;
+        color: var(--ink);
+        padding: 0 16px;
+        font: 700 15px "Bree Serif", KaiTi, STKaiti, serif;
+        cursor: pointer;
+      }
+      .filter[aria-pressed="true"], .filter:hover, .search:focus { background: var(--hover); outline: none; }
+      .year-section { margin: 0 0 32px; }
+      .year { margin: 0 0 18px; font-size: 36px; line-height: 1; }
+      .note-row {
+        display: grid;
+        grid-template-columns: 120px minmax(0, 1fr) 112px;
+        gap: 16px;
+        align-items: center;
+        min-height: 42px;
+        padding: 5px 0;
+        border-bottom: 1px solid transparent;
+      }
+      .note-row:hover { border-bottom-color: var(--line); }
+      .date { font-size: 18px; font-weight: 700; white-space: nowrap; }
+      .title { font-size: 21px; line-height: 1.45; }
+      .title small { color: var(--soft-ink); font-size: 0.78em; }
+      .tag {
+        justify-self: end;
+        min-width: 96px;
+        border: 2px solid var(--ink);
+        border-radius: 4px;
+        background: #ffffff;
+        padding: 3px 12px 4px;
+        text-align: center;
+        font-size: 15px;
+        font-weight: 700;
+      }
+      .empty { display: none; margin: 36px 0; color: var(--soft-ink); font-size: 20px; }
+      .article-meta { margin: 32px 0 18px; color: var(--soft-ink); font-size: 17px; }
+      .article-title { margin: 26px 0 12px; font-size: clamp(36px, 6vw, 64px); line-height: 1.08; }
+      .article-summary { color: var(--soft-ink); font-size: 20px; line-height: 1.8; }
+      .article-body { margin-top: 34px; font-size: 21px; line-height: 2; }
+      .article-body h2, .article-body h3, .article-body h4 { margin: 34px 0 12px; line-height: 1.35; }
+      .article-body p, .article-body ul, .article-body blockquote, .article-body pre { margin: 0 0 20px; }
+      .article-body ul { padding-left: 1.35em; }
+      .article-body blockquote { border-left: 4px solid var(--ink); padding-left: 18px; color: var(--soft-ink); }
+      .article-body code { background: #ffffff; border: 1px solid var(--line); padding: 1px 5px; border-radius: 3px; }
+      .article-body pre { background: #ffffff; border: 2px solid var(--ink); border-radius: 4px; padding: 16px; overflow: auto; line-height: 1.6; }
+      .article-body hr { border: 0; border-top: 2px solid var(--ink); margin: 34px 0; }
+      .table-wrap { margin: 0 0 24px; overflow-x: auto; }
+      table { width: 100%; border-collapse: collapse; background: #ffffff; }
+      th, td { border: 2px solid var(--ink); padding: 10px 12px; text-align: left; vertical-align: top; }
+      th { background: var(--hover); font-weight: 700; }
+      .back-link { display: inline-block; margin-top: 38px; border: 2px solid var(--ink); border-radius: 4px; background: #ffffff; padding: 6px 14px 8px; font-weight: 700; }
+      .site-footer { margin-top: 54px; border-top: 2px solid var(--ink); padding-top: 18px; color: var(--soft-ink); font-size: 16px; line-height: 1.8; }
+      @media (max-width: 680px) {
+        .page { width: min(100% - 28px, var(--max)); padding-top: 28px; }
+        .site-header { grid-template-columns: 1fr; }
+        .mark { width: 58px; height: 58px; }
+        .identity-card { align-items: flex-start; }
+        .note-row { grid-template-columns: 74px minmax(0, 1fr); gap: 10px; align-items: start; padding: 10px 0; }
+        .date { font-size: 16px; }
+        .title { font-size: 19px; }
+        .tag { grid-column: 2; justify-self: start; min-width: 78px; font-size: 14px; }
+        .article-body { font-size: 19px; }
+      }
+</style>
+  </head>
+  <body>
+    <main class="page">
+      <header class="site-header">
+        <div>
+          <a class="brand" href="../index.html">WORK LIFE NOTES</a>
+          <p class="motto">把工作写成方法，把生活写成证据。</p>
+        </div>
+        <div class="identity-card" aria-label="WTP-静能生慧标识">
+          <img class="mark" src="../assets/notebook-mark.svg" alt="" />
+          <div class="wtp-badge" aria-hidden="true">
+            <span class="wtp-code">WTP</span>
+            <span class="wtp-dash">-</span>
+            <span class="wtp-name">静能生慧</span>
+          </div>
+        </div>
+      </header>
+      <div class="article-meta">Jun 13 · 工作</div>
+      <h1 class="article-title">办公室系统职责与能力要求</h1>
+      <p class="article-summary">从政治属性、系统管理、三个价值三个维度，梳理新时代办公室系统的职责定位与能力要求</p>
+      <article class="article-body">
+<h3>引言：办公室工作面临的新形势</h3>
+<p>当前，办公室工作的政治要求越来越高，政治属性更加凸显；职能外延越来越广，工作边界持续延伸，&quot;三服务&quot;内涵也在不断丰富。这对办公室系统的职责定位和能力素养提出了更高要求。</p>
+<p>办公室系统要深入学习贯彻习近平总书记关于办公厅工作的重要指示精神，认真贯彻&quot;五个坚持&quot;重要要求，全面落实公司党组各项部署，更好发挥统筹协调、参谋助手、督促检查、服务保障等职能作用。</p>
+<p>围绕上述目标，可以从三个维度加以理解：<strong>政治属性是根本前提，系统管理是职责延伸，&quot;三个价值&quot;是衡量标准</strong>。</p>
+<h3>一、政治属性：办公室的第一属性</h3>
+<p>办公室离各级党委和领导班子最近，所处位置决定了其工作的政治属性。办文办会办事、保密、信访、值班、信息、督查、决策机制等每一项业务，都不仅是技术性工作，更承载着明显的政治责任。</p>
+<p>这意味着，办公室系统必须在三个层面保持清醒：</p>
+<ul><li><strong>政治安全</strong>——在大是大非问题上立场坚定，确保各项工作始终沿着正确方向推进。</li><li><strong>程序安全</strong>——严格执行请示报告制度，不能因为&quot;好心安排&quot;&quot;想做得周到&quot;，就擅自变通程序，导致执行上级要求打折扣，甚至触碰纪律红线。</li><li><strong>管理安全</strong>——对内部管理中的风险点保持警惕，将保密、信访、值班等工作的政治责任落到实处。</li></ul>
+<p>简言之，办公室的一切工作首先要过&quot;政治关&quot;。政治上不出问题，是底线；程序上不打折扣，是要求；管理上不留盲区，是保障。</p>
+<h3>二、系统管理：从&quot;服务本级&quot;到&quot;管好系统&quot;</h3>
+<p>过去，办公室往往被理解为&quot;本级领导班子的服务保障机构&quot;。但实际上，办公室的职责远不止于此——<strong>既要服务本级，也要管好系统</strong>。</p>
+<p>会议中特别强调，办公室不能只围绕本级领导班子做好&quot;三服务&quot;，还要把本系统管理好。也就是说，办公室同时承担着两种角色：</p>
+<ul><li><strong>作业角色</strong>：做好本级机关的日常运转保障。</li><li><strong>管理角色</strong>：对整个系统的业务线进行规范、指导和监督。</li></ul>
+<p>具体而言，系统管理职责至少涵盖以下领域：</p>
+<div class="table-wrap"><table>
+        <thead><tr><th>业务领域</th><th>本级职责</th><th>系统管理职责</th></tr></thead>
+        <tbody><tr><td><strong>文档工作</strong></td><td>起草、审核本级公文</td><td>管整个系统的公文运行和质量</td></tr><tr><td><strong>会议工作</strong></td><td>组织本级各类会议</td><td>管整个系统会议管理机制</td></tr><tr><td><strong>值班工作</strong></td><td>落实本级值班安排</td><td>管系统值班体系建设</td></tr><tr><td><strong>信访工作</strong></td><td>受理本级信访事项</td><td>管系统信访工作规范</td></tr><tr><td><strong>保密工作</strong></td><td>执行本级保密制度</td><td>管系统保密管理体系</td></tr><tr><td><strong>&quot;三重一大&quot;</strong></td><td>服务本级决策机制</td><td>管系统决策机制落实</td></tr></tbody>
+      </table></div>
+<p>因此，办公室既要做好&quot;当下的事&quot;，也要穿透基层、带动系统，确保各项制度要求层层传导、一贯到底。</p>
+<h3>三、&quot;三个价值&quot;：衡量办公室作用的标准</h3>
+<p>政治属性回答了&quot;为谁服务&quot;的问题，系统管理回答了&quot;管什么&quot;的问题，而&quot;三个价值&quot;则回答了<strong>&quot;做得怎么样&quot;</strong>的问题。</p>
+<p><strong>第一，在调查研究、参谋辅政中提升支撑决策的价值。</strong></p>
+<p>办公室不能只做&quot;传声筒&quot;和&quot;收发室&quot;，而要成为领导决策的&quot;思想库&quot;。通过深入基层调研、掌握第一手信息、提前研判形势，为领导班子提供有价值的参考意见。</p>
+<p><strong>第二，在统筹协调、督促检查中提升推动落实的价值。</strong></p>
+<p>决策部署之后，关键在落实。办公室要发挥&quot;中枢纽带&quot;作用，协调各方、跟踪问效，确保党组决策不打折、不走样、不延误，真正将&quot;督&quot;与&quot;帮&quot;结合起来。</p>
+<p><strong>第三，在服务保障、规范管理中创造高效运转的价值。</strong></p>
+<p>日常运转看似琐碎，实则是组织效率的基石。通过优化流程、规范制度、减少冗余，让机关运转更加顺畅，让干部职工有更多精力投入主业。</p>
+<p>这三个价值层层递进：<strong>支撑决策是上游贡献，推动落实是中游贡献，高效运转是下游贡献</strong>。三者合在一起，构成办公室系统完整的价值链条。</p>
+<h3>结语</h3>
+<p>总而言之，新时代办公室系统的职责可以用三句话概括：</p>
+<blockquote>- <strong>政治上靠得住</strong>——把政治属性贯穿于一切工作之中；</blockquote>
+<blockquote>- <strong>管理上管得严</strong>——从服务本级延伸到管好系统；</blockquote>
+<blockquote>- <strong>价值上看得见</strong>——以&quot;三个价值&quot;为标尺，持续提升工作贡献。</blockquote>
+<p>办公室系统的每一位同志都应以此为方向，加强自身建设，提升能力素养，真正成为让组织放心、让基层满意的坚强前哨和巩固后院。</p>
+      </article>
+      <a class="back-link" href="../index.html">返回首页</a>
+    </main>
+  </body>
+</html>

@@ -101,7 +101,9 @@ npm run obsidian:publish
 npm run obsidian:sync
 ```
 
-同步脚本不会自动删除任何一边的文件，避免误删文章。需要删除文章时，请同时删除 Obsidian `posts` 和网站目录 `content/posts/` 里的同名 Markdown，再运行 `npm run publish`。
+同步时，Obsidian `posts` 是文章源头。网站目录 `content/posts/` 里如果存在 Obsidian 已经没有的 Markdown，会被移除；这个操作不会删除 Obsidian 原文。
+
+`未命名.md`、`Untitled.md` 这类临时草稿会被跳过，不会发布到网站。
 
 ### Obsidian 自动发布
 

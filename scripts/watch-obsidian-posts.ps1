@@ -56,6 +56,7 @@ function Invoke-AutoPublish {
     $syncScript,
     "-Direction",
     "obsidian-to-site",
+    "-Prune",
     "-Publish",
     "-Message",
     $Message
