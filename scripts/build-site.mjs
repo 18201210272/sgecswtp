@@ -7,6 +7,7 @@ const postsDir = path.join(root, "posts");
 const siteDir = path.join(root, "_site");
 const sitePostsDir = path.join(siteDir, "posts");
 
+fs.rmSync(postsDir, { recursive: true, force: true });
 fs.mkdirSync(postsDir, { recursive: true });
 fs.rmSync(siteDir, { recursive: true, force: true });
 fs.mkdirSync(sitePostsDir, { recursive: true });
@@ -57,6 +58,23 @@ function inlineMarkdown(text) {
   return out;
 }
 
+function isTableRow(line) {
+  return /^\s*\|.+\|\s*$/.test(line);
+}
+
+function isTableSeparator(line) {
+  return /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(line);
+}
+
+function splitTableRow(line) {
+  return line
+    .trim()
+    .replace(/^\|/, "")
+    .replace(/\|$/, "")
+    .split("|")
+    .map((cell) => cell.trim());
+}
+
 function markdownToHtml(markdown) {
   const lines = markdown.split(/\r?\n/);
   const html = [];
@@ -77,7 +95,8 @@ function markdownToHtml(markdown) {
     list = [];
   }
 
-  for (const line of lines) {
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
     if (line.trim().startsWith("```")) {
       if (inCode) {
         html.push(`<pre><code>${escapeHtml(code.join("\n"))}</code></pre>`);
@@ -99,6 +118,33 @@ function markdownToHtml(markdown) {
     if (!line.trim()) {
       flushParagraph();
       flushList();
+      continue;
+    }
+
+    if (/^---+$/.test(line.trim())) {
+      flushParagraph();
+      flushList();
+      html.push("<hr />");
+      continue;
+    }
+
+    if (isTableRow(line) && isTableSeparator(lines[i + 1] || "")) {
+      flushParagraph();
+      flushList();
+      const header = splitTableRow(line);
+      i += 2;
+      const rows = [];
+      while (i < lines.length && isTableRow(lines[i])) {
+        rows.push(splitTableRow(lines[i]));
+        i += 1;
+      }
+      i -= 1;
+      html.push(`<div class="table-wrap"><table>
+        <thead><tr>${header.map((cell) => `<th>${inlineMarkdown(cell)}</th>`).join("")}</tr></thead>
+        <tbody>${rows
+          .map((row) => `<tr>${row.map((cell) => `<td>${inlineMarkdown(cell)}</td>`).join("")}</tr>`)
+          .join("")}</tbody>
+      </table></div>`);
       continue;
     }
 
@@ -290,6 +336,11 @@ const css = `
       .article-body blockquote { border-left: 4px solid var(--ink); padding-left: 18px; color: var(--soft-ink); }
       .article-body code { background: #ffffff; border: 1px solid var(--line); padding: 1px 5px; border-radius: 3px; }
       .article-body pre { background: #ffffff; border: 2px solid var(--ink); border-radius: 4px; padding: 16px; overflow: auto; line-height: 1.6; }
+      .article-body hr { border: 0; border-top: 2px solid var(--ink); margin: 34px 0; }
+      .table-wrap { margin: 0 0 24px; overflow-x: auto; }
+      table { width: 100%; border-collapse: collapse; background: #ffffff; }
+      th, td { border: 2px solid var(--ink); padding: 10px 12px; text-align: left; vertical-align: top; }
+      th { background: var(--hover); font-weight: 700; }
       .back-link { display: inline-block; margin-top: 38px; border: 2px solid var(--ink); border-radius: 4px; background: #ffffff; padding: 6px 14px 8px; font-weight: 700; }
       .site-footer { margin-top: 54px; border-top: 2px solid var(--ink); padding-top: 18px; color: var(--soft-ink); font-size: 16px; line-height: 1.8; }
       @media (max-width: 680px) {
