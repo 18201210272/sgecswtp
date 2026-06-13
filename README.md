@@ -8,6 +8,21 @@ sgecswtp.top
 
 ## 写文章
 
+最简单的日常流程：
+
+```powershell
+cd "D:\Nutstore\0.2026年-代办工作\work-life-reflections-promo\website"
+npm run new:post -- -Title "文章标题" -Category "工作" -Summary "首页副标题" -Open
+```
+
+写完后发布：
+
+```powershell
+npm run publish
+```
+
+`publish` 会自动执行：生成网页、提交 git、推送 GitHub。GitHub Pages 会在推送后自动更新。
+
 文章放在：
 
 ```text
@@ -34,6 +49,12 @@ keywords: 搜索关键词
 npm run new -- "文章标题"
 ```
 
+更推荐使用新版命令，因为可以直接指定分类和摘要：
+
+```powershell
+npm run new:post -- -Title "文章标题" -Category "读书" -Summary "一句话摘要" -Keywords "关键词1 关键词2" -Open
+```
+
 生成网站：
 
 ```powershell
@@ -45,10 +66,7 @@ npm run build
 把 Obsidian 的库目录指向这个网站仓库，或在 Obsidian 里打开 `content/posts/` 这个目录。写完 Markdown 后：
 
 ```powershell
-npm run build
-git add .
-git commit -m "Update posts"
-git push
+npm run publish
 ```
 
 如果你使用 Obsidian Git 插件，可以让它自动 commit/push。仓库里的 GitHub Actions 会在 `main` 分支更新后自动运行 `npm run build` 并发布 `_site/`。

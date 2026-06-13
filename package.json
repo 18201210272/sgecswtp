@@ -4,6 +4,8 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build-site.mjs",
-    "new": "node scripts/new-post.mjs"
+    "new": "node scripts/new-post.mjs",
+    "new:post": "powershell -ExecutionPolicy Bypass -File scripts/new-post.ps1",
+    "publish": "powershell -ExecutionPolicy Bypass -File scripts/publish.ps1"
   }
 }
