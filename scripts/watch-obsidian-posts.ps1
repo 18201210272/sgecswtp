@@ -47,6 +47,7 @@ function Get-PostsSnapshot {
 function Invoke-AutoPublish {
   Write-Log "Quiet period reached. Starting publish."
   Set-Location $repoRoot
+  $runLog = Join-Path $logDir ("publish-run-{0}.log" -f (Get-Date -Format "yyyyMMdd-HHmmss"))
 
   $args = @(
     "-NoProfile",
@@ -62,13 +63,45 @@ function Invoke-AutoPublish {
     $Message
   )
 
-  $output = & powershell @args 2>&1
-  foreach ($line in $output) {
-    Write-Log $line.ToString()
+  $process = Start-Process `
+    -FilePath "powershell.exe" `
+    -ArgumentList $args `
+    -WorkingDirectory $repoRoot `
+    -RedirectStandardOutput $runLog `
+    -RedirectStandardError $runLog `
+    -WindowStyle Hidden `
+    -PassThru
+
+  $timeout = [TimeSpan]::FromMinutes(10)
+  $started = Get-Date
+  $lastSize = 0
+
+  while (-not $process.HasExited) {
+    Start-Sleep -Seconds 5
+
+    if (Test-Path -LiteralPath $runLog -PathType Leaf) {
+      $item = Get-Item -LiteralPath $runLog
+      if ($item.Length -ne $lastSize) {
+        $lastSize = $item.Length
+        Write-Log "Publish is still running. Log: $runLog"
+      }
+    }
+
+    if (((Get-Date) - $started) -gt $timeout) {
+      Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+      Write-Log "Publish timed out after $($timeout.TotalMinutes) minutes. Stopped process $($process.Id)."
+      return $false
+    }
   }
 
-  if ($LASTEXITCODE -ne 0) {
-    Write-Log "Publish failed with exit code $LASTEXITCODE."
+  if (Test-Path -LiteralPath $runLog -PathType Leaf) {
+    foreach ($line in (Get-Content -LiteralPath $runLog -Tail 80)) {
+      Write-Log $line.ToString()
+    }
+  }
+
+  if ($process.ExitCode -ne 0) {
+    Write-Log "Publish failed with exit code $($process.ExitCode). Full log: $runLog"
     return $false
   }
 
