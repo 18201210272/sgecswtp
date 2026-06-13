@@ -9,6 +9,9 @@
     "publish": "powershell -ExecutionPolicy Bypass -File scripts/publish.ps1",
     "obsidian:init": "powershell -ExecutionPolicy Bypass -File scripts/sync-obsidian-posts.ps1 -Direction site-to-obsidian",
     "obsidian:sync": "powershell -ExecutionPolicy Bypass -File scripts/sync-obsidian-posts.ps1 -Direction obsidian-to-site",
-    "obsidian:publish": "powershell -ExecutionPolicy Bypass -File scripts/sync-obsidian-posts.ps1 -Direction obsidian-to-site -Publish"
+    "obsidian:publish": "powershell -ExecutionPolicy Bypass -File scripts/sync-obsidian-posts.ps1 -Direction obsidian-to-site -Publish",
+    "obsidian:watch": "powershell -ExecutionPolicy Bypass -File scripts/watch-obsidian-posts.ps1",
+    "obsidian:auto-install": "powershell -ExecutionPolicy Bypass -File scripts/install-obsidian-autopublish-task.ps1 -StartNow",
+    "obsidian:auto-remove": "powershell -ExecutionPolicy Bypass -File scripts/uninstall-obsidian-autopublish-task.ps1"
   }
 }

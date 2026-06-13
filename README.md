@@ -103,6 +103,28 @@ npm run obsidian:sync
 
 同步脚本不会自动删除任何一边的文件，避免误删文章。需要删除文章时，请同时删除 Obsidian `posts` 和网站目录 `content/posts/` 里的同名 Markdown，再运行 `npm run publish`。
 
+### Obsidian 自动发布
+
+安装后台自动发布：
+
+```powershell
+npm run obsidian:auto-install
+```
+
+安装后，Windows 登录时会自动启动监听程序。你在 Obsidian 的 `posts` 目录保存 Markdown 后，脚本会等待 60 秒无新变化，然后自动同步、生成网站、提交并推送 GitHub。
+
+日志位置：
+
+```text
+%LOCALAPPDATA%\sgecswtp-site\obsidian-autopublish.log
+```
+
+如需关闭自动发布：
+
+```powershell
+npm run obsidian:auto-remove
+```
+
 ## Codex 工作流
 
 以后你可以直接对 Codex 说：
