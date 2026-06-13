@@ -252,7 +252,7 @@ function markdownToHtml(markdown) {
 
 function readPosts() {
   if (!fs.existsSync(contentDir)) return [];
-  return fs
+  const posts = fs
     .readdirSync(contentDir)
     .filter((name) => name.endsWith(".md"))
     .map((name) => {
@@ -294,6 +294,19 @@ function readPosts() {
       };
     })
     .sort((a, b) => b.date.localeCompare(a.date));
+
+  const usedSlugs = new Map();
+  for (const post of posts) {
+    const count = usedSlugs.get(post.slug) || 0;
+    usedSlugs.set(post.slug, count + 1);
+
+    if (count === 0) continue;
+
+    post.slug = `${post.slug}-${shortHash(post.source)}`;
+    post.href = `posts/${post.slug}.html`;
+  }
+
+  return posts;
 }
 
 const css = `
