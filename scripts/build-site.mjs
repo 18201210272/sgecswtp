@@ -17,12 +17,37 @@ function escapeHtml(value) {
     .replaceAll('"', "&quot;");
 }
 
-function slugify(value) {
+function slugifyAscii(value) {
   return String(value)
     .trim()
     .toLowerCase()
-    .replace(/[^\p{Letter}\p{Number}]+/gu, "-")
+    .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+}
+
+function shortHash(value) {
+  let hash = 2166136261;
+  for (const char of String(value)) {
+    hash ^= char.codePointAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+
+  return (hash >>> 0).toString(36);
+}
+
+function createSlug({ explicitSlug, sourceName, title, date }) {
+  const explicit = explicitSlug ? slugifyAscii(explicitSlug) : "";
+  if (explicit) return explicit;
+
+  const sourceSlug = slugifyAscii(sourceName);
+  if (sourceSlug) {
+    return /[^\x00-\x7F]/.test(sourceName) ? `${sourceSlug}-${shortHash(sourceName)}` : sourceSlug;
+  }
+
+  const titleSlug = slugifyAscii(title);
+  if (titleSlug) return `${titleSlug}-${shortHash(sourceName || title)}`;
+
+  return `post-${date}-${shortHash(sourceName || title)}`;
 }
 
 function toIsoDate(date) {
@@ -242,8 +267,8 @@ function readPosts() {
       const title = data.title || cleanTitle(path.basename(name, ".md"));
       const category = data.category || "工作";
       const baseName = path.basename(name, ".md");
-      const slugSource = data.slug || (/^(未命名|untitled)/i.test(baseName) ? title : baseName);
-      const slug = slugify(slugSource);
+      const slugSource = /^(未命名|untitled)/i.test(baseName) ? title : baseName;
+      const slug = createSlug({ explicitSlug: data.slug, sourceName: slugSource, title, date });
       if (!title) throw new Error(`${name} needs title`);
       if (!slug) throw new Error(`${name} needs slug`);
 
