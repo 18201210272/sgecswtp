@@ -28,15 +28,15 @@ const plist = `<?xml version="1.0" encoding="UTF-8"?>
   <key>Label</key><string>${label}</string>
   <key>ProgramArguments</key>
   <array>
+    <string>/usr/bin/env</string>
+    <string>-i</string>
+    <string>HOME=${xml(os.homedir())}</string>
+    <string>PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+    <string>OBSIDIAN_POSTS_DIR=${xml(obsidianPosts)}</string>
     <string>${xml(process.execPath)}</string>
     <string>${xml(path.join(repoRoot, "scripts", "watch-obsidian-posts.mjs"))}</string>
   </array>
   <key>WorkingDirectory</key><string>${xml(repoRoot)}</string>
-  <key>EnvironmentVariables</key>
-  <dict>
-    <key>OBSIDIAN_POSTS_DIR</key><string>${xml(obsidianPosts)}</string>
-    <key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
-  </dict>
   <key>RunAtLoad</key><true/>
   <key>KeepAlive</key><true/>
   <key>StandardOutPath</key><string>${xml(path.join(logsDir, "autopublish.log"))}</string>
