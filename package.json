@@ -6,12 +6,15 @@
     "build": "node scripts/build-site.mjs",
     "new": "node scripts/new-post.mjs",
     "new:post": "powershell -ExecutionPolicy Bypass -File scripts/new-post.ps1",
-    "publish": "powershell -ExecutionPolicy Bypass -File scripts/publish.ps1",
-    "obsidian:init": "powershell -ExecutionPolicy Bypass -File scripts/sync-obsidian-posts.ps1 -Direction site-to-obsidian",
-    "obsidian:sync": "powershell -ExecutionPolicy Bypass -File scripts/sync-obsidian-posts.ps1 -Direction obsidian-to-site -Prune",
-    "obsidian:publish": "powershell -ExecutionPolicy Bypass -File scripts/sync-obsidian-posts.ps1 -Direction obsidian-to-site -Prune -Publish",
-    "obsidian:watch": "powershell -ExecutionPolicy Bypass -File scripts/watch-obsidian-posts.ps1",
-    "obsidian:auto-install": "powershell -ExecutionPolicy Bypass -File scripts/install-obsidian-autopublish-task.ps1 -StartNow",
-    "obsidian:auto-remove": "powershell -ExecutionPolicy Bypass -File scripts/uninstall-obsidian-autopublish-task.ps1"
+    "publish": "node scripts/publish.mjs",
+    "publish:windows": "powershell -ExecutionPolicy Bypass -File scripts/publish.ps1",
+    "obsidian:init": "node scripts/sync-obsidian-posts.mjs --direction site-to-obsidian",
+    "obsidian:sync": "node scripts/sync-obsidian-posts.mjs --direction obsidian-to-site --prune",
+    "obsidian:publish": "node scripts/sync-obsidian-posts.mjs --direction obsidian-to-site --prune --publish",
+    "obsidian:watch": "node scripts/watch-obsidian-posts.mjs",
+    "obsidian:auto-install": "node scripts/install-macos-autopublish.mjs",
+    "obsidian:auto-remove": "node scripts/uninstall-macos-autopublish.mjs",
+    "obsidian:auto-install:windows": "powershell -ExecutionPolicy Bypass -File scripts/install-obsidian-autopublish-task.ps1 -StartNow",
+    "obsidian:auto-remove:windows": "powershell -ExecutionPolicy Bypass -File scripts/uninstall-obsidian-autopublish-task.ps1"
   }
 }
