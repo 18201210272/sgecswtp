@@ -4,6 +4,8 @@ date: 2026-06-13
 category: 工作
 summary: 储能技术服务产品化
 keywords: 储能 技术服务 产品化
+tags: 储能, 产品化, 技术服务
+
 slug: energy-storage-technical-service-system
 ---
 
