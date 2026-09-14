@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Bungee+Shade&display=swap" rel="stylesheet" />
     <style>
+      [hidden] { display: none !important; }
       :root {
         --paper: #fbfaf7;
         --ink: #000000;
@@ -63,6 +64,34 @@
       .wtp-code { font-family: "Bree Serif", serif; }
       .wtp-dash { margin: 0 4px; }
       .wtp-name { font-family: KaiTi, STKaiti, SimSun, serif; }
+      .site-nav { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 22px 0 6px; }
+      .site-nav a {
+        display: inline-block;
+        border: 2px solid var(--ink);
+        border-radius: 4px;
+        background: #ffffff;
+        padding: 4px 14px 5px;
+        font-size: 15px;
+        font-weight: 700;
+      }
+      .site-nav a:hover { background: var(--hover); }
+      .archive-list { margin: 0; padding: 0; list-style: none; }
+      .archive-list li { display: flex; gap: 14px; align-items: baseline; padding: 10px 0; border-bottom: 1px solid var(--line); }
+      .archive-list .date { min-width: 86px; }
+      .archive-list .title { font-size: 19px; line-height: 1.4; }
+      .archive-list .tags { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; }
+      a.tag-pill {
+        border: 1px solid var(--ink);
+        border-radius: 999px;
+        background: #ffffff;
+        padding: 1px 10px 2px;
+        font-size: 13px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      a.tag-pill:hover { background: var(--hover); }
+      .tag-cloud { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 12px 14px; }
+      .tag-cloud li { line-height: 1; }
       .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 28px 0 38px; }
       .search {
         flex: 1 1 260px;
@@ -76,6 +105,9 @@
         font: 17px "Bree Serif", KaiTi, STKaiti, serif;
       }
       .filter {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         height: 38px;
         border: 2px solid var(--ink);
         border-radius: 4px;
@@ -85,7 +117,7 @@
         font: 700 15px "Bree Serif", KaiTi, STKaiti, serif;
         cursor: pointer;
       }
-      .filter[aria-pressed="true"], .filter:hover, .search:focus { background: var(--hover); outline: none; }
+      .filter[aria-current="true"], .filter:hover, .search:focus { background: var(--hover); outline: none; }
       .year-section { margin: 0 0 32px; }
       .year { margin: 0 0 18px; font-size: 36px; line-height: 1; }
       .note-row {
@@ -112,6 +144,7 @@
         font-size: 15px;
         font-weight: 700;
       }
+      a.tag:hover, a.tag:focus-visible { background: var(--hover); outline: none; }
       .empty { display: none; margin: 36px 0; color: var(--soft-ink); font-size: 20px; }
       .article-meta { margin: 32px 0 18px; color: var(--soft-ink); font-size: 17px; }
       .article-title { margin: 26px 0 12px; font-size: clamp(36px, 6vw, 64px); line-height: 1.08; }
@@ -159,9 +192,15 @@
           </div>
         </div>
       </header>
-      <div class="article-meta">Jun 13 · 工作</div>
+      <nav class="site-nav" aria-label="页面导航">
+    <a href="../index.html">首页</a>
+    <a href="../archive.html">归档</a>
+    <a href="../tags.html">标签</a>
+  </nav>
+      <div class="article-meta">Jun 13 · <a class="tag-pill" href="../index.html?category=%E5%B7%A5%E4%BD%9C">工作</a></div>
       <h1 class="article-title">台区储能 vs 台区配变：造价、容量价值与经济性边界</h1>
       <p class="article-summary">从设备造价、负荷曲线、收益机制和风险边界四个维度，比较台区储能与台区配变的适用场景。</p>
+      
       <article class="article-body">
 <h2>台区储能 vs 台区配变：造价、容量价值与经济性边界</h2>
 <p>讨论台区储能和台区配变，最容易落入一个简单比较：储能多少元/W，配变多少元/W，然后得出“储能比配变贵几倍”的结论。</p>

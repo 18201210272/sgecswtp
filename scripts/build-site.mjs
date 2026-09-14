@@ -35,6 +35,12 @@ function shortHash(value) {
   return (hash >>> 0).toString(36);
 }
 
+function tagSlug(value) {
+  const ascii = slugifyAscii(value);
+  if (/[^\x20-\x7E]/.test(value)) return ascii ? `${ascii}-${shortHash(value)}` : shortHash(value);
+  return ascii;
+}
+
 function createSlug({ explicitSlug, sourceName, title, date }) {
   const explicit = explicitSlug ? slugifyAscii(explicitSlug) : "";
   if (explicit) return explicit;
@@ -107,14 +113,43 @@ function parseFrontMatter(source, filePath) {
   }
 
   const data = {};
-  for (const line of match[1].split(/\r?\n/)) {
+  const lines = match[1].split(/\r?\n/);
+  let listKey = null;
+  let listItems = [];
+
+  function flushList() {
+    if (listKey && listItems.length) {
+      data[listKey] = `[${listItems.map((item) => `"${item.replace(/"/g, '\\"')}"`).join(",")}]`;
+    }
+    listKey = null;
+    listItems = [];
+  }
+
+  for (const line of lines) {
     if (!line.trim() || line.trim().startsWith("#")) continue;
+    const listItem = line.match(/^\s*-\s+(.+)$/);
+    if (listItem && listKey) {
+      listItems.push(listItem[1].trim().replace(/^["']|["']$/g, ""));
+      continue;
+    }
     const separator = line.indexOf(":");
-    if (separator === -1) continue;
+    if (separator === -1) {
+      flushList();
+      continue;
+    }
     const key = line.slice(0, separator).trim();
     const raw = line.slice(separator + 1).trim();
-    data[key] = raw.replace(/^["']|["']$/g, "");
+    if (key === "tags" && !raw) {
+      flushList();
+      listKey = "tags";
+      continue;
+    }
+    flushList();
+    if (raw) {
+      data[key] = raw.replace(/^["']|["']$/g, "");
+    }
   }
+  flushList();
 
   return { data, body: match[2].trim() };
 }
@@ -266,6 +301,18 @@ function readPosts() {
 
       const title = data.title || cleanTitle(path.basename(name, ".md"));
       const category = data.category || "工作";
+      let tags = [];
+      if (data.tags) {
+        const rawTags = String(data.tags).trim();
+        if (rawTags.startsWith("[")) {
+          tags = JSON.parse(rawTags);
+        } else {
+          tags = rawTags
+            .split(/[,，]/)
+            .map((item) => item.trim())
+            .filter(Boolean);
+        }
+      }
       const baseName = path.basename(name, ".md");
       const slugSource = /^(未命名|untitled)/i.test(baseName) ? title : baseName;
       const slug = createSlug({ explicitSlug: data.slug, sourceName: slugSource, title, date });
@@ -285,6 +332,7 @@ function readPosts() {
         year,
         displayDate,
         category,
+        tags,
         summary: data.summary || "",
         keywords,
         slug,
@@ -310,6 +358,7 @@ function readPosts() {
 }
 
 const css = `
+      [hidden] { display: none !important; }
       :root {
         --paper: #fbfaf7;
         --ink: #000000;
@@ -364,6 +413,34 @@ const css = `
       .wtp-code { font-family: "Bree Serif", serif; }
       .wtp-dash { margin: 0 4px; }
       .wtp-name { font-family: KaiTi, STKaiti, SimSun, serif; }
+      .site-nav { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 22px 0 6px; }
+      .site-nav a {
+        display: inline-block;
+        border: 2px solid var(--ink);
+        border-radius: 4px;
+        background: #ffffff;
+        padding: 4px 14px 5px;
+        font-size: 15px;
+        font-weight: 700;
+      }
+      .site-nav a:hover { background: var(--hover); }
+      .archive-list { margin: 0; padding: 0; list-style: none; }
+      .archive-list li { display: flex; gap: 14px; align-items: baseline; padding: 10px 0; border-bottom: 1px solid var(--line); }
+      .archive-list .date { min-width: 86px; }
+      .archive-list .title { font-size: 19px; line-height: 1.4; }
+      .archive-list .tags { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; }
+      a.tag-pill {
+        border: 1px solid var(--ink);
+        border-radius: 999px;
+        background: #ffffff;
+        padding: 1px 10px 2px;
+        font-size: 13px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      a.tag-pill:hover { background: var(--hover); }
+      .tag-cloud { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 12px 14px; }
+      .tag-cloud li { line-height: 1; }
       .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 28px 0 38px; }
       .search {
         flex: 1 1 260px;
@@ -377,6 +454,9 @@ const css = `
         font: 17px "Bree Serif", KaiTi, STKaiti, serif;
       }
       .filter {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         height: 38px;
         border: 2px solid var(--ink);
         border-radius: 4px;
@@ -386,7 +466,7 @@ const css = `
         font: 700 15px "Bree Serif", KaiTi, STKaiti, serif;
         cursor: pointer;
       }
-      .filter[aria-pressed="true"], .filter:hover, .search:focus { background: var(--hover); outline: none; }
+      .filter[aria-current="true"], .filter:hover, .search:focus { background: var(--hover); outline: none; }
       .year-section { margin: 0 0 32px; }
       .year { margin: 0 0 18px; font-size: 36px; line-height: 1; }
       .note-row {
@@ -413,6 +493,7 @@ const css = `
         font-size: 15px;
         font-weight: 700;
       }
+      a.tag:hover, a.tag:focus-visible { background: var(--hover); outline: none; }
       .empty { display: none; margin: 36px 0; color: var(--soft-ink); font-size: 20px; }
       .article-meta { margin: 32px 0 18px; color: var(--soft-ink); font-size: 17px; }
       .article-title { margin: 26px 0 12px; font-size: clamp(36px, 6vw, 64px); line-height: 1.08; }
@@ -476,6 +557,14 @@ function header(prefix = "") {
       </header>`;
 }
 
+function pageNav(prefix = "") {
+  return `<nav class="site-nav" aria-label="页面导航">
+    <a href="${prefix}index.html">首页</a>
+    <a href="${prefix}archive.html">归档</a>
+    <a href="${prefix}tags.html">标签</a>
+  </nav>`;
+}
+
 function indexPage(posts) {
   const categories = [...new Set(posts.map((post) => post.category))];
   const byYear = new Map();
@@ -487,7 +576,8 @@ function indexPage(posts) {
   const filters = ["全部", ...categories]
     .map((category, index) => {
       const filter = index === 0 ? "all" : category;
-      return `<button class="filter" type="button" data-filter="${escapeHtml(filter)}" aria-pressed="${index === 0}">${escapeHtml(category)}</button>`;
+      const href = index === 0 ? "index.html" : `index.html?category=${encodeURIComponent(category)}`;
+      return `<a class="filter" href="${escapeHtml(href)}" data-filter="${escapeHtml(filter)}" aria-current="${index === 0}">${escapeHtml(category)}</a>`;
     })
     .join("\n        ");
 
@@ -498,7 +588,7 @@ function indexPage(posts) {
           (post) => `<article class="note-row" data-category="${escapeHtml(post.category)}" data-search="${escapeHtml(post.keywords)}">
           <time class="date">${escapeHtml(post.displayDate)}</time>
           <a class="title" href="${escapeHtml(post.href)}">${escapeHtml(post.title)}${post.summary ? ` <small>${escapeHtml(post.summary)}</small>` : ""}</a>
-          <span class="tag">${escapeHtml(post.category)}</span>
+          <a class="tag" href="index.html?category=${encodeURIComponent(post.category)}" data-category-link data-filter="${escapeHtml(post.category)}">${escapeHtml(post.category)}</a>
         </article>`,
         )
         .join("\n        ");
@@ -513,6 +603,8 @@ function indexPage(posts) {
   <body>
     <main class="page">
       ${header()}
+
+      ${pageNav()}
 
       <nav class="toolbar" aria-label="文章筛选">
         <input class="search" id="search" type="search" placeholder="搜索标题、关键词或年份" />
@@ -531,14 +623,23 @@ function indexPage(posts) {
     <script>
       const search = document.querySelector("#search");
       const filters = Array.from(document.querySelectorAll(".filter"));
+      const categoryLinks = Array.from(document.querySelectorAll("[data-filter]"));
       const rows = Array.from(document.querySelectorAll(".note-row"));
       const sections = Array.from(document.querySelectorAll(".year-section"));
       const empty = document.querySelector("#empty");
-      let active = "all";
+      const validCategories = new Set(["all", ...filters.map((item) => item.dataset.filter)]);
+
+      function categoryFromUrl() {
+        const requested = new URLSearchParams(window.location.search).get("category") || "all";
+        return validCategories.has(requested) ? requested : "all";
+      }
+
+      let active = categoryFromUrl();
 
       function applyFilters() {
         const term = search.value.trim().toLowerCase();
         let visibleCount = 0;
+        filters.forEach((item) => item.setAttribute("aria-current", String(item.dataset.filter === active)));
         rows.forEach((row) => {
           const categoryMatch = active === "all" || row.dataset.category === active;
           const searchMatch = !term || row.dataset.search.toLowerCase().includes(term);
@@ -552,14 +653,24 @@ function indexPage(posts) {
         });
         empty.style.display = visibleCount === 0 ? "block" : "none";
       }
-      filters.forEach((button) => {
-        button.addEventListener("click", () => {
-          active = button.dataset.filter;
-          filters.forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
+
+      categoryLinks.forEach((link) => {
+        link.addEventListener("click", (event) => {
+          event.preventDefault();
+          active = link.dataset.filter;
+          const url = new URL(window.location.href);
+          if (active === "all") url.searchParams.delete("category");
+          else url.searchParams.set("category", active);
+          window.history.pushState({}, "", url);
           applyFilters();
         });
       });
       search.addEventListener("input", applyFilters);
+      window.addEventListener("popstate", () => {
+        active = categoryFromUrl();
+        applyFilters();
+      });
+      applyFilters();
     </script>
   </body>
 </html>
@@ -567,17 +678,123 @@ function indexPage(posts) {
 }
 
 function articlePage(post) {
+  const tags = post.tags
+    .map(
+      (tag) =>
+        `<a class="tag-pill" href="../tags.html#${escapeHtml(tagSlug(tag))}">${escapeHtml(tag)}</a>`,
+    )
+    .join("\n        ");
+  const tagRow = post.tags.length ? `<div class="article-meta">${tags}</div>` : "";
   return `${head(`${post.title} - Work Life Notes`, post.summary || post.title)}
   <body>
     <main class="page">
       ${header("../")}
-      <div class="article-meta">${escapeHtml(post.displayDate)} · ${escapeHtml(post.category)}</div>
+      ${pageNav("../")}
+      <div class="article-meta">${escapeHtml(post.displayDate)} · <a class="tag-pill" href="../index.html?category=${encodeURIComponent(post.category)}">${escapeHtml(post.category)}</a></div>
       <h1 class="article-title">${escapeHtml(post.title)}</h1>
       ${post.summary ? `<p class="article-summary">${escapeHtml(post.summary)}</p>` : ""}
+      ${tagRow}
       <article class="article-body">
 ${markdownToHtml(post.body)}
       </article>
       <a class="back-link" href="../index.html">返回首页</a>
+    </main>
+  </body>
+</html>
+`;
+}
+
+function archivePage(posts) {
+  const years = {};
+  for (const post of posts) {
+    if (!years[post.year]) years[post.year] = [];
+    years[post.year].push(post);
+  }
+  const sections = Object.entries(years)
+    .sort(([a], [b]) => b.localeCompare(a))
+    .map(
+      ([year, yearPosts]) => `<section class="year-section" data-year="${year}">
+        <h1 class="year">${year}（${yearPosts.length} 篇）</h1>
+        <ul class="archive-list">
+          ${yearPosts
+            .map(
+              (post) => `<li>
+            <span class="date">${escapeHtml(post.displayDate)}</span>
+            <a class="title" href="${escapeHtml(post.href)}">${escapeHtml(post.title)}</a>
+            ${post.tags.length ? `<span class="tags">${post.tags
+              .map((tag) => `<a class="tag-pill" href="tags.html#${escapeHtml(tagSlug(tag))}">${escapeHtml(tag)}</a>`)
+              .join("")}</span>` : ""}
+          </li>`,
+            )
+            .join("\n          ")}
+        </ul>
+      </section>`,
+    )
+    .join("\n\n      ");
+  return `${head("文章归档 - Work Life Notes", "按年份归档全部文章。")}
+  <body>
+    <main class="page">
+      ${header()}
+      ${pageNav()}
+      <h1 class="article-title">文章归档</h1>
+      <p class="article-summary">共 ${posts.length} 篇，按年份倒序排列。</p>
+      ${sections}
+      <footer class="site-footer">
+        文章来源：<code>content/posts/*.md</code>。写完 Markdown 后运行 <code>npm run publish</code> 更新网页。
+      </footer>
+    </main>
+  </body>
+</html>
+`;
+}
+
+function tagsPage(posts) {
+  const tagCounts = new Map();
+  for (const post of posts) {
+    for (const tag of post.tags) {
+      tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
+    }
+  }
+  const tags = [...tagCounts.entries()].sort(([a], [b]) => a.localeCompare(b, "zh-CN"));
+  const pills = tags
+    .map(
+      ([tag, count]) =>
+        `<li class="tag-item" id="${escapeHtml(tagSlug(tag))}"><a class="tag-pill" href="#${escapeHtml(tagSlug(tag))}">${escapeHtml(tag)}（${count}）</a></li>`,
+    )
+    .join("\n        ");
+  const postGroups = tags
+    .map(([tag]) => {
+      const matched = posts.filter((post) => post.tags.includes(tag));
+      return `<section class="year-section" data-tag="${escapeHtml(tag)}" id="__${escapeHtml(tagSlug(tag))}">
+        <h1 class="year">${escapeHtml(tag)}（${matched.length}）<a class="tag-pill" href="#" style="font-size:13px;vertical-align:middle;">↑置顶</a></h1>
+        <ul class="archive-list">
+          ${matched
+            .map(
+              (post) => `<li>
+            <span class="date">${escapeHtml(post.displayDate)}</span>
+            <a class="title" href="${escapeHtml(post.href)}">${escapeHtml(post.title)}</a>
+          </li>`,
+            )
+            .join("\n          ")}
+        </ul>
+      </section>`;
+    })
+    .join("\n\n      ");
+
+  return `${head("标签 - Work Life Notes", "按标签浏览全部文章。")}
+  <body>
+    <main class="page">
+      ${header()}
+      ${pageNav()}
+      <h1 class="article-title">标签</h1>
+      <p class="article-summary">点击标签查看该主题下的全部文章。</p>
+      <ul class="tag-cloud">
+        ${pills}
+      </ul>
+      ${postGroups}
+      <footer class="site-footer">
+        文章来源：<code>content/posts/*.md</code>。写完 Markdown 后运行 <code>npm run publish</code> 更新网页。
+      </footer>
     </main>
   </body>
 </html>
@@ -613,6 +830,15 @@ for (const post of posts) {
 const indexHtml = indexPage(posts);
 fs.writeFileSync(path.join(root, "index.html"), indexHtml, "utf8");
 fs.writeFileSync(path.join(siteDir, "index.html"), indexHtml, "utf8");
+
+const archiveHtml = archivePage(posts);
+fs.writeFileSync(path.join(root, "archive.html"), archiveHtml, "utf8");
+fs.writeFileSync(path.join(siteDir, "archive.html"), archiveHtml, "utf8");
+
+const tagsHtml = tagsPage(posts);
+fs.writeFileSync(path.join(root, "tags.html"), tagsHtml, "utf8");
+fs.writeFileSync(path.join(siteDir, "tags.html"), tagsHtml, "utf8");
+
 copyDir(path.join(root, "assets"), path.join(siteDir, "assets"));
 for (const file of ["CNAME", ".nojekyll"]) {
   const source = path.join(root, file);
